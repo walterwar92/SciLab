@@ -34,10 +34,6 @@ t0 = 0;
 tf = 100;
 h = 0.1;
 
-if getenv("STEP") <> "" then
-    h = evstr(getenv("STEP"));
-end
-
 // Начальные условия
 x0 = [0; 0; 0];
 
