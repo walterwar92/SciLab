@@ -1,0 +1,12 @@
+[Unit]
+Description=Scilab Function Processing Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/python3 /home/username/app.py
+WorkingDirectory=/home/username
+Restart=always
+User=username
+
+[Install]
+WantedBy=multi-user.target
