@@ -14,8 +14,8 @@ function [L, U, P] = LU_decomposition(A)
     P = eye(n);
     for k = 1:n-1
         // Исправленный вызов max для Scilab
-        [max_value, i_max] = max(abs(U(k:n, k)));
-        i_max = i_max + k - 1;  // Индекс строки для перестановки
+        [max_value, i_max] = max(abs(U(k:n, k))); // Индекс строки с максимальным элементом
+        i_max = i_max + k - 1;  // Индекс для строки из подматрицы, скорректированный на k
         if k ~= i_max then
             // Перестановка строк в U и P
             U([k, i_max], :) = U([i_max, k], :);
@@ -28,6 +28,7 @@ function [L, U, P] = LU_decomposition(A)
     end
     L = L + eye(n);  // Добавляем единичную матрицу на диагональ
 endfunction
+
 
 
 // Функция QR-разложения с использованием метода отражения
