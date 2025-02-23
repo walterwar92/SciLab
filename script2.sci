@@ -1,71 +1,69 @@
 // script2.sci
-
-// Заданная матрица
+// Заданная матрица для разложений
 A = [2 2 -3 3; 3 2 -1 1; 1 1 -2 2; 2 4 3 2];
 
-// Функция LU-разложения с частичным выбором ведущего элемента
-function [L, U, P] = LU_decomposition(A)
-    [n, m] = size(A);
-    if n ~= m then
-        error("Матрица должна быть квадратной для LU-разложения.");
+// Размерность матрицы
+[n, m] = size(A);
+
+// Проверка, что матрица квадратная
+if n ~= m then
+    error("Матрица должна быть квадратной для LU-разложения и QR-разложения.");
+end
+
+// --- 1. LU-разложение с частичным выбором ведущего элемента ---
+L = zeros(n, n);
+U = A;
+P = eye(n);
+
+for k = 1:n-1
+    // Частичный выбор ведущего элемента
+    [max_value, i_max] = max(abs(U(k:n, k)));
+    i_max = i_max + k - 1;  // Индекс для полного массива
+
+    // Перестановка строк в U и P
+    if k ~= i_max then
+        U([k, i_max], :) = U([i_max, k], :);
+        P([k, i_max], :) = P([i_max, k], :);
     end
-    L = zeros(n, n);
-    U = A;
-    P = eye(n);
-    for k = 1:n-1
-        // Вычисляем максимальный элемент в столбце k для частичного выбора ведущего элемента
-        [max_value, i_max] = max(abs(U(k:n, k))); // Индекс строки с максимальным элементом
-        i_max = i_max + k - 1;  // Корректируем индекс для полной строки
 
-        // Если индекс выходит за пределы диапазона, выводим ошибку
-        if i_max > n then
-            error("Индекс i_max выходит за пределы диапазона. Пожалуйста, проверьте размерность матрицы.");
-        end
-
-        if k ~= i_max then
-            // Перестановка строк в U и P
-            U([k, i_max], :) = U([i_max, k], :);
-            P([k, i_max], :) = P([i_max, k], :);
-        end
-
-        // Выполнение LU-разложения
-        for i = k+1:n
-            L(i, k) = U(i, k) / U(k, k);
-            U(i, k:n) = U(i, k:n) - L(i, k) * U(k, k:n);
-        end
+    // Выполнение LU-разложения
+    for i = k+1:n
+        L(i, k) = U(i, k) / U(k, k);
+        U(i, k:n) = U(i, k:n) - L(i, k) * U(k, k:n);
     end
-    L = L + eye(n);  // Добавляем единичную матрицу на диагональ
-endfunction
+end
 
-// Функция QR-разложения с использованием метода отражения
-function [Q, R] = QR_decomposition(A)
-    [m, n] = size(A);
-    Q = eye(m);
-    R = A;
-    for k = 1:n
-        x = R(k:m, k);
-        e = zeros(length(x), 1);
-        e(1) = 1;
-        v = sign(x(1)) * norm(x) * e + x;
-        v = v / norm(v);
-        R(k:m, k:n) = R(k:m, k:n) - 2 * v * (v' * R(k:m, k:n));
-        Q(k:m, :) = Q(k:m, :) - 2 * v * (v' * Q(k:m, :));
-    end
-endfunction
+L = L + eye(n);  // Добавляем единичную матрицу на диагональ
 
-// Применение LU-разложения
-[L_LU, U_LU, P_LU] = LU_decomposition(A);
+// Запись результатов LU-разложения в CSV
+csvWrite([L; U], "LU_result.csv");
+csvWrite(P, "P_result.csv");
 
-// Применение QR-разложения
-[Q_QR, R_QR] = QR_decomposition(A);
+// --- 2. QR-разложение с использованием метода отражений ---
+Q = eye(n);
+R = A;
 
-// Применение встроенных функций Scilab для LU и QR разложения
-[L_builtin, U_builtin, P_builtin] = lu(A);
-[Q_builtin, R_builtin] = qr(A);
+for k = 1:n
+    // Вектор x для отражения
+    x = R(k:n, k);
+    e = zeros(length(x), 1);
+    e(1) = 1;
 
-// Запись результатов в CSV
-csvWrite([L_LU; U_LU], "LU_result.csv");
-csvWrite([Q_QR; R_QR], "QR_result.csv");
+    // Вычисление вектора v для отражения
+    v = sign(x(1)) * norm(x) * e + x;
+    v = v / norm(v);
 
-// Возврат к основным данным
-exit;
+    // Применение отражения для R
+    R(k:n, k:n) = R(k:n, k:n) - 2 * v * (v' * R(k:n, k:n));
+    
+    // Применение отражения для Q
+    Q(k:n, :) = Q(k:n, :) - 2 * v * (v' * Q(k:n, :));
+end
+
+// Запись результатов QR-разложения в CSV
+csvWrite(Q, "Q_result.csv");
+csvWrite(R, "R_result.csv");
+
+// Вывод сообщений о завершении
+disp("Результаты LU-разложения записаны в LU_result.csv и P_result.csv.");
+disp("Результаты QR-разложения записаны в Q_result.csv и R_result.csv.");
