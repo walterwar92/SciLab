@@ -48,19 +48,20 @@ x0 = [0; 0; 0];
 [T_rk4, X_rk4] = runge_kutta4(f, t0, tf, x0, h);
 
 // Сетка времени для встроенной функции ode
-N = int((tf - t0) / h);
-T_grid = linspace(t0, tf, N+1);
+T_grid = linspace(t0, tf, int((tf - t0) / h) + 1);
 
 // Решение с помощью встроенной функции ode
-X_builtin = ode(x0, t0, T_grid, f);
+[X_builtin, T_builtin] = ode(x0, t0, T_grid, f);
 
-// Убедимся, что размеры совпадают
-if size(T_rk4, "c") == size(X_builtin, "r") then
-    // Сохраним время, первую компоненту Рунге-Кутта и ode
-    data = [T_rk4' X_rk4(1,:)' X_builtin(:,1)];
+// Преобразование в формат (N, 3) для корректного объединения данных
+X_builtin_transposed = X_builtin';
+
+// Проверка размерностей и запись данных
+if size(T_rk4, "c") == size(T_builtin, "c") then
+    data = [T_rk4' X_rk4(1,:)' X_builtin_transposed(:,1)];
     csvWrite(data, "output.csv");
 else
-    printf("Размерности решений не совпадают: Рунге-Кутта — %d, ode — %d\n", size(T_rk4, "c"), size(X_builtin, "r"));
+    printf("Размерности временных шагов не совпадают: Рунге-Кутта — %d, ode — %d\n", size(T_rk4, "c"), size(T_builtin, "c"));
 end
 
 exit;
