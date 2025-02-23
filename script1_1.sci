@@ -47,15 +47,20 @@ x0 = [0; 0; 0];
 // Решение ОДУ методом Рунге–Кутта 4-го порядка
 [T_rk4, X_rk4] = runge_kutta4(f, t0, tf, x0, h);
 
-// Сетка времени
+// Сетка времени для встроенной функции ode
 N = int((tf - t0) / h);
 T_grid = linspace(t0, tf, N+1);
 
-// Решение с помощью встроенной функции ode (аналог ode45)
+// Решение с помощью встроенной функции ode
 X_builtin = ode(x0, t0, T_grid, f);
 
-// Сохранение данных в CSV
-data = [T_rk4' X_rk4(1,:)' X_builtin(:,1)];
-csvWrite(data, "output.csv");
+// Убедимся, что размеры совпадают
+if size(T_rk4, "c") == size(X_builtin, "r") then
+    // Сохраним время, первую компоненту Рунге-Кутта и ode
+    data = [T_rk4' X_rk4(1,:)' X_builtin(:,1)];
+    csvWrite(data, "output.csv");
+else
+    printf("Размерности решений не совпадают: Рунге-Кутта — %d, ode — %d\n", size(T_rk4, "c"), size(X_builtin, "r"));
+end
 
 exit;
