@@ -47,21 +47,14 @@ x0 = [0; 0; 0];
 // Решение ОДУ методом Рунге–Кутта 4-го порядка
 [T_rk4, X_rk4] = runge_kutta4(f, t0, tf, x0, h);
 
-// Сетка времени для встроенной функции ode
+// Сетка времени для метода ode
 T_grid = linspace(t0, tf, int((tf - t0) / h) + 1);
 
-// Решение с помощью встроенной функции ode
-[X_builtin, T_builtin] = ode(x0, t0, T_grid, f);
+// Решение ОДУ встроенной функцией ode
+X_builtin = ode(x0, t0, T_grid, f);
 
-// Преобразование в формат (N, 3) для корректного объединения данных
-X_builtin_transposed = X_builtin';
-
-// Проверка размерностей и запись данных
-if size(T_rk4, "c") == size(T_builtin, "c") then
-    data = [T_rk4' X_rk4(1,:)' X_builtin_transposed(:,1)];
-    csvWrite(data, "output.csv");
-else
-    printf("Размерности временных шагов не совпадают: Рунге-Кутта — %d, ode — %d\n", size(T_rk4, "c"), size(T_builtin, "c"));
-end
+// Запись данных в CSV: t, x1 (Рунге-Кутта), x1 (ode)
+data = [T_rk4' X_rk4(1,:)' X_builtin(1,:)'];
+csvWrite(data, "output.csv");
 
 exit;
