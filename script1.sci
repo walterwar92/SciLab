@@ -33,9 +33,14 @@ endfunction
 t0 = 0;
 tf = 100;
 
-// Получение шага из переменной окружения STEP
-h_str = getenv("STEP");
-if isempty(h_str) then
+// Попытка получить значение переменной окружения STEP
+try
+    h_str = getenv("STEP");
+catch
+    h_str = "";
+end
+
+if h_str == "" then
     h = 0.1;
 else
     h = evstr(h_str); // Преобразуем строку в число
